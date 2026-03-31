@@ -45,7 +45,7 @@ function clearRoundUI() {
 
 function renderRound() {
   clearRoundUI();
-  setStatus("Step 1: choose a flag. Step 2: choose the matching country name.");
+  setStatus("Match all 4 pairs: choose one flag and one country name.");
 
   round.flags.forEach((country) => {
     const btn = document.createElement("button");
@@ -86,21 +86,42 @@ function highlightSelected(selector, selectedCode, className) {
 }
 
 function onSelectFlag(code) {
+  if (round.matchedCodes.has(code)) {
+    return;
+  }
   selectedFlag = code;
   highlightSelected(".flag-card", code, "selected");
   evaluateIfReady();
 }
 
 function onSelectAnswer(code) {
+  if (round.matchedCodes.has(code)) {
+    return;
+  }
   selectedAnswer = code;
   highlightSelected(".answer-btn", code, "selected");
   evaluateIfReady();
 }
 
-function lockRound() {
+function clearCurrentSelections() {
+  selectedFlag = null;
+  selectedAnswer = null;
   document.querySelectorAll(".flag-card, .answer-btn").forEach((el) => {
-    el.disabled = true;
+    el.classList.remove("selected");
   });
+}
+
+function hideMatchedPair(code) {
+  const flagEl = document.querySelector(`.flag-card[data-country-code="${code}"]`);
+  const answerEl = document.querySelector(
+    `.answer-btn[data-country-code="${code}"]`
+  );
+  flagEl?.classList.add("matched");
+  answerEl?.classList.add("matched");
+  flagEl?.classList.remove("selected");
+  answerEl?.classList.remove("selected");
+  flagEl && (flagEl.disabled = true);
+  answerEl && (answerEl.disabled = true);
 }
 
 function applyRoundResult(isCorrect) {
@@ -118,16 +139,11 @@ function applyRoundResult(isCorrect) {
     selectedAnswerEl.classList.add(isCorrect ? "correct" : "wrong");
   }
 
-  if (!isCorrect) {
-    const correctFlag = document.querySelector(
-      `.flag-card[data-country-code="${round.targetCode}"]`
-    );
-    const correctAnswer = document.querySelector(
-      `.answer-btn[data-country-code="${round.targetCode}"]`
-    );
-    correctFlag?.classList.add("correct");
-    correctAnswer?.classList.add("correct");
-  }
+  // Remove temporary result styles after a short feedback delay.
+  setTimeout(() => {
+    selectedFlagEl?.classList.remove("correct", "wrong");
+    selectedAnswerEl?.classList.remove("correct", "wrong");
+  }, 350);
 }
 
 function evaluateIfReady() {
@@ -135,29 +151,34 @@ function evaluateIfReady() {
     return;
   }
 
-  const isCorrect =
-    selectedFlag === selectedAnswer && selectedAnswer === round.targetCode;
+  const isCorrect = selectedFlag === selectedAnswer;
   totalQuestions += 1;
   if (isCorrect) {
     score += 1;
-    setStatus("Correct! Click Next Question.");
+    round.matchedCodes.add(selectedFlag);
+    hideMatchedPair(selectedFlag);
+
+    if (round.matchedCodes.size === round.flags.length) {
+      setStatus("Great! You matched all 4. Click Next Question.");
+      nextButton.disabled = false;
+    } else {
+      const remaining = round.flags.length - round.matchedCodes.size;
+      setStatus(`Correct match. ${remaining} pair(s) left.`);
+    }
   } else {
-    const targetCountry = round.flags.find((c) => c.cca2 === round.targetCode);
-    setStatus(`Not correct. Right answer: ${targetCountry.name.common}.`);
+    setStatus("Not a match. Try another combination.");
   }
   updateScore();
   applyRoundResult(isCorrect);
-  lockRound();
-  nextButton.disabled = false;
+  clearCurrentSelections();
 }
 
 function createRound() {
   const picked = chooseFourCountries();
-  const target = picked[Math.floor(Math.random() * picked.length)];
   round = {
     flags: shuffle(picked),
     answers: shuffle(picked),
-    targetCode: target.cca2,
+    matchedCodes: new Set(),
   };
 }
 

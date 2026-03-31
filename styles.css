@@ -88,6 +88,11 @@ body {
   border-color: var(--bad);
 }
 
+.flag-card.matched {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .flag-card img {
   width: 100%;
   height: 100%;
@@ -121,6 +126,11 @@ body {
 
 .answer-btn.wrong {
   border-color: var(--bad);
+}
+
+.answer-btn.matched {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .controls {
