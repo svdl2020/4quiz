@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Flag Quiz</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <header class="top">
+        <h1>Flag Quiz</h1>
+        <p class="subtitle">Pick the country that matches the highlighted flag.</p>
+      </header>
+
+      <section class="status" aria-live="polite">
+        <p id="questionText">Loading question...</p>
+        <p id="scoreText">Score: 0 / 0</p>
+      </section>
+
+      <section class="grid flags-grid" id="flagsGrid" aria-label="Flag options"></section>
+
+      <section class="grid answers-grid" id="answersGrid" aria-label="Country answers"></section>
+
+      <div class="controls">
+        <button id="nextButton" type="button" disabled>Next Question</button>
+      </div>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
